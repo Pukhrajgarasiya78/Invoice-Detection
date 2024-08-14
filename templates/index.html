@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Processing App</title>
+    <style>
+        /* Existing styles */
+        /* ... */
+        #outputImage{
+            width: 61em;
+            height: 50em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Processing Application</h1>
+    <form id="imageForm">
+        <label for="imageUrl">Enter Image URL:</label>
+        <input type="text" id="imageUrl" placeholder="Paste your image URL here">
+        
+        <label for="imageUpload">Or Upload an Image:</label>
+        <input type="file" id="imageUpload" accept="image/*" capture="camera">
+        
+        <button type="submit">Process Image</button>
+    </form>
+
+    <h2>Extracted Text</h2>
+    <pre id="outputText"></pre>
+
+    <h2>Processed Image</h2>
+    <img id="outputImage" src="" alt="Processed Image" />
+
+    <script>
+        document.getElementById('imageForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const imageUrl = document.getElementById('imageUrl').value;
+            const imageUpload = document.getElementById('imageUpload').files[0];
+            const outputText = document.getElementById('outputText');
+            const outputImage = document.getElementById('outputImage');
+
+            const formData = new FormData();
+            formData.append('image_url', imageUrl);
+            if (imageUpload) {
+                formData.append('image_file', imageUpload);
+            }
+
+            try {
+                const response = await fetch('/process-image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    outputText.textContent = data.error;
+                } else {
+                    outputText.textContent = data.extracted_text;
+                    outputImage.src = `data:image/jpeg;base64,${data.image}`;
+                }
+            } catch (error) {
+                outputText.textContent = 'An error occurred while processing the image.';
+            }
+        });
+    </script>
+</body>
+</html>
